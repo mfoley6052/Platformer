@@ -24,7 +24,7 @@ Begin VB.Form Form1
    End
    Begin VB.Timer tmrJump 
       Enabled         =   0   'False
-      Interval        =   100
+      Interval        =   1
       Left            =   1680
       Top             =   2640
    End
@@ -36,11 +36,11 @@ Begin VB.Form Form1
    End
    Begin VB.Shape Player 
       BackStyle       =   1  'Opaque
-      Height          =   735
+      Height          =   255
       Left            =   360
       Shape           =   3  'Circle
-      Top             =   4080
-      Width           =   855
+      Top             =   4560
+      Width           =   255
    End
 End
 Attribute VB_Name = "Form1"
@@ -56,6 +56,7 @@ Dim plLeft As Boolean
 Dim plRight As Boolean
 Dim jPressed As Boolean
 Dim jTime As Integer
+Dim initDist As Single
 
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
@@ -70,6 +71,8 @@ ElseIf KeyCode = 39 Then
     plLeft = False
 ElseIf KeyCode = 38 Then
     If jumping = False Then
+        initDist = Player.Top
+        vspeed = 100
         jumping = True
         tmrJump.Enabled = True
 '    Else
@@ -77,13 +80,13 @@ ElseIf KeyCode = 38 Then
 '        tmrJcount.Enabled = False
     End If
 End If
-If jumping = False Then
-vspeed = jTime
-End If
+'If jumping = False Then
+'vspeed = jTime
+'End If
 End Sub
 
 Private Sub Form_Load()
-speed = 30
+speed = 50
 vspeed = 100
 gravity = 9.8
 End Sub
@@ -97,6 +100,9 @@ End Sub
 'End Sub
 
 Private Sub tmrJump_Timer()
+Dim dist As Single
+Dim curDist As Single
+
 'If jPressed = True Then
     Player.Top = Player.Top - vspeed
 'End If
@@ -105,13 +111,19 @@ If plLeft = True Then
 ElseIf plRight = True Then
     Player.left = Player.left + speed
 End If
-vspeed = vspeed - gravity
+If vspeed >= 0 Then
+    vspeed = vspeed - (0.3 * gravity)
+Else
+    vspeed = vspeed - (10 * gravity)
+End If
 txtDbg.Text = vspeed & ", " & jumping
 'If vspeed <= -jTime Then
- If vspeed <= -100 Then
+curDist = Player.Top
+dist = initDist - curDist
+If dist <= 0 Then
+    Player.Top = initDist
     jumping = False
     vspeed = 100
-    
     tmrJump.Enabled = False
 Else
     jumping = True
