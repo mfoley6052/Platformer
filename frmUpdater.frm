@@ -63,7 +63,7 @@ Attribute VB_Exposed = False
 Dim opened As Boolean
 Dim filenum(1) As Integer
 Dim verNum As String
-Dim oldtxt As String
+Dim oldtext As String
 Dim strPath As String
 Dim revision() As String
 
@@ -74,19 +74,22 @@ If Dir(strPath) <> "" Then
     filenum(0) = FreeFile
     Open strPath For Input As #filenum(0)
     Line Input #filenum(0), verNum
+    txtVersion.Text = verNum
     Do Until EOF(filenum(0))
         Line Input #filenum(0), temp
-        oldText = oldText & vbclrf & temp
+        oldtext = oldtext & vbclrf & temp
     Loop
-    txtVersion.Text = verNum
     Close #filenum(0)
+If Dir(App.Path & "\Changelog.old") <> "" Then
     Kill App.Path & "\Changelog.old"
     Name App.Path & "\Changelog.txt" As App.Path & "\Changelog.old"
+End If
+    SetAttr App.Path & "\Changelog.old", vbHidden
+    
 Else
     Open strPath For Output As #1
     Close #1
 End If
-txtStatus.Text = oldText
 'terminate:
 'For x = 0 To 1
 '    Close #x
@@ -104,10 +107,10 @@ Private Sub cmdUpdate_Click()
     filenum(1) = FreeFile
     Open strPath For Append As #filenum(1)
     If txtChange.Text <> "" Then
-        Print #filenum(1), "####################################################################"
         Print #filenum(1), verNum
+        Print #filenum(1), "####################################################################"
         Print #filenum(1), txtChange.Text
-        Print #filenum(1), oldText
+        Print #filenum(1), oldtext
     End If
     Close #filenum(1)
     txtChange.Text = ""
