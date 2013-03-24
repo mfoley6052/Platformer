@@ -8,6 +8,16 @@ Begin VB.Form Form1
    ScaleHeight     =   5610
    ScaleWidth      =   12930
    StartUpPosition =   3  'Windows Default
+   Begin VB.Timer tmrPlayerconv 
+      Interval        =   10
+      Left            =   5880
+      Top             =   2520
+   End
+   Begin VB.Timer tmrEnvironment 
+      Interval        =   10
+      Left            =   240
+      Top             =   840
+   End
    Begin VB.Timer tmrJcount 
       Enabled         =   0   'False
       Interval        =   1
@@ -24,9 +34,25 @@ Begin VB.Form Form1
    End
    Begin VB.Timer tmrJump 
       Enabled         =   0   'False
-      Interval        =   1
+      Interval        =   10
       Left            =   1680
       Top             =   2640
+   End
+   Begin VB.Shape killzone 
+      Height          =   255
+      Index           =   1
+      Left            =   9120
+      Top             =   4800
+      Visible         =   0   'False
+      Width           =   855
+   End
+   Begin VB.Shape killzone 
+      Height          =   255
+      Index           =   0
+      Left            =   3720
+      Top             =   4800
+      Visible         =   0   'False
+      Width           =   855
    End
    Begin VB.Line Line1 
       X1              =   0
@@ -34,7 +60,7 @@ Begin VB.Form Form1
       Y1              =   4800
       Y2              =   4800
    End
-   Begin VB.Shape Player 
+   Begin VB.Shape objPlayer 
       BackStyle       =   1  'Opaque
       Height          =   255
       Left            =   360
@@ -57,7 +83,18 @@ Dim plRight As Boolean
 Dim jPressed As Boolean
 Dim jTime As Integer
 Dim initDist As Single
-
+Private Type actor
+     bottom As Single
+     top As Single
+     left As Single
+     right As Single
+     mass As Single
+     height As Single
+     width As Single
+End Type
+Dim Player As actor
+Dim topInit As Single
+Dim leftInit As Single
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 'MsgBox (KeyCode)
@@ -71,7 +108,7 @@ ElseIf KeyCode = 39 Then
     plLeft = False
 ElseIf KeyCode = 38 Then
     If jumping = False Then
-        initDist = Player.Top
+        initDist = Player.top
         vspeed = 100
         jumping = True
         tmrJump.Enabled = True
@@ -89,6 +126,28 @@ Private Sub Form_Load()
 speed = 50
 vspeed = 100
 gravity = 9.8
+topInit = objPlayer.top
+leftInit = objPlayer.left
+Player.left = objPlayer.left
+Player.top = objPlayer.top
+Player.right = (objPlayer.left + objPlayer.width)
+Player.bottom = (objPlayer.top + objPlayer.height)
+Player.height = objPlayer.height
+Player.width = objPlayer.width
+End Sub
+
+Private Sub tmrEnvironment_Timer()
+Dim dummy As Integer
+For x = killzone.LBound To killzone.UBound
+    If Player.bottom >= killzone(x).top And Player.top <= (killzone(x).top + killzone(x).width) And Player.left >= (killzone(x).left + killzone(x).width) And Player.right <= killzone(x).left Then
+        dummy = MsgBox("again?", vbYesNo, "Dead")
+        If dummy = vbYes Then
+            Call reset
+        Else
+            End
+        End If
+    End If
+Next x
 End Sub
 
 'Private Sub tmrJcount_Timer()
@@ -104,7 +163,7 @@ Dim dist As Single
 Dim curDist As Single
 
 'If jPressed = True Then
-    Player.Top = Player.Top - vspeed
+    Player.top = Player.top - vspeed
 'End If
 If plLeft = True Then
     Player.left = Player.left - speed
@@ -118,10 +177,10 @@ Else
 End If
 txtDbg.Text = vspeed & ", " & jumping
 'If vspeed <= -jTime Then
-curDist = Player.Top
+curDist = Player.top
 dist = initDist - curDist
 If dist <= 0 Then
-    Player.Top = initDist
+    Player.top = initDist
     jumping = False
     vspeed = 100
     tmrJump.Enabled = False
@@ -129,3 +188,28 @@ Else
     jumping = True
 End If
 End Sub
+
+Private Sub tmrPlayerconv_Timer()
+    If objPlayer.top <> Player.top Then
+        objPlayer.top = Player.top
+    End If
+    If objPlayer.top <> Player.left Then
+        objPlayer.left = Player.left
+    End If
+End Sub
+
+Private Function reset() As Boolean
+objPlayer.top = topInit
+objPlayer.left = leftInit
+speed = 50
+vspeed = 100
+gravity = 9.8
+topInit = objPlayer.top
+leftInit = objPlayer.left
+Player.left = objPlayer.left
+Player.top = objPlayer.top
+Player.right = (objPlayer.left + objPlayer.width)
+Player.bottom = (objPlayer.top + objPlayer.height)
+Player.height = objPlayer.height
+Player.width = objPlayer.width
+End Function
